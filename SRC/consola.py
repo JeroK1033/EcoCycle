@@ -1,6 +1,10 @@
 import os
 import sys
 import requests
+import subprocess
+import time
+import tkinter as tk
+from tkinter import filedialog
 
 SERVER_URL = "http://localhost:8000"
 
@@ -10,6 +14,8 @@ COLORES = {
     "rojo":     "\033[91m",
     "azul":     "\033[94m",
     "cyan":     "\033[96m",
+    "blanco":   "\033[97m",  # Añadido para mostrar_resultado
+    "negro":    "\033[90m",  # Añadido para mostrar_resultado (gris oscuro para que se vea en consola negra)
     "reset":    "\033[0m",
     "bold":     "\033[1m",
 }
@@ -19,7 +25,7 @@ def color(texto, c):
 
 def banner():
     print(color("\n╔══════════════════════════════════╗", "verde"))
-    print(color("║       ♻️  EcoCycle IA CLI          ║", "verde"))
+    print(color("║       ♻️  EcoCycle IA CLI         ║", "verde"))
     print(color("╚══════════════════════════════════╝\n", "verde"))
 
 def verificar_servidor():
@@ -31,32 +37,30 @@ def verificar_servidor():
     except requests.ConnectionError:
         print(color("❌ No se pudo conectar al servidor.", "rojo"))
         print(color(f"   Asegúrate de que esté corriendo en {SERVER_URL}", "amarillo"))
-        print(color("   Ejecuta: uvicorn SRC.server:app --reload\n", "cyan"))
         return False
 
 def pedir_ruta_imagen():
-    print(color("📂 Ingresa la ruta de la imagen a analizar:", "azul"))
-    print(color("   (Ejemplo: C:/fotos/botella.jpg  o  ./imagenes/lata.png)\n", "cyan"))
+    print(color("📂 Abriendo explorador de archivos para seleccionar la imagen...", "azul"))
+    
+    # Inicializar y ocultar la ventana principal de tkinter
+    root = tk.Tk()
+    root.withdraw() 
+    root.attributes('-topmost', True) # Asegura que la ventana salga por encima
+    
+    # Abrir el explorador
+    ruta = filedialog.askopenfilename(
+        title="Selecciona la imagen para EcoCycle",
+        filetypes=[
+            ("Archivos de imagen", "*.jpg *.jpeg *.png *.webp *.gif *.bmp"),
+            ("Todos los archivos", "*.*")
+        ]
+    )
+    
+    if not ruta:
+        print(color("\n⚠️  Operación cancelada: No se seleccionó ninguna imagen.", "amarillo"))
+        return None
 
-    while True:
-        ruta = input(color("   Ruta: ", "bold")).strip().strip('"').strip("'")
-
-        if ruta.lower() in ("salir", "exit", "q"):
-            print(color("\nHasta luego! ♻️\n", "verde"))
-            sys.exit(0)
-
-        if not os.path.exists(ruta):
-            print(color(f"\n⚠️  No se encontró el archivo: {ruta}", "rojo"))
-            print(color("   Intenta de nuevo o escribe 'salir' para cerrar.\n", "amarillo"))
-            continue
-
-        extension = os.path.splitext(ruta)[1].lower()
-        if extension not in (".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"):
-            print(color(f"\n⚠️  Formato no soportado: {extension}", "rojo"))
-            print(color("   Usa: .jpg, .jpeg, .png, .webp\n", "amarillo"))
-            continue
-
-        return ruta
+    return ruta
 
 def mostrar_resultado(data: dict):
     clasificacion = data.get("clasificacion", "")
@@ -105,22 +109,52 @@ def analizar_imagen(ruta: str):
 
 def main():
     banner()
+    servidor = None
 
-    if not verificar_servidor():
-        sys.exit(1)
+    try:
+        # 1. Iniciar Uvicorn en segundo plano
+        print(color("⏳ Iniciando el servidor de Inteligencia Artificial en segundo plano...", "cyan"))
+        servidor = subprocess.Popen([sys.executable, "-m", "uvicorn", "SRC.server:app", "--reload"])
+        
+        # Darle 3 segundos al servidor para que levante completamente
+        time.sleep(3) 
 
-    print(color("💡 Escribe 'salir' en cualquier momento para cerrar.\n", "cyan"))
+        # 2. Verificar que haya iniciado bien
+        if not verificar_servidor():
+            sys.exit(1)
 
-    while True:
-        ruta = pedir_ruta_imagen()
-        analizar_imagen(ruta)
+        print(color("💡 Cancela la selección de archivos en cualquier momento para salir.\n", "cyan"))
 
-        print(color("¿Analizar otra imagen? (Enter para continuar / 'salir' para cerrar)", "azul"))
-        resp = input(color("   > ", "bold")).strip().lower()
-        if resp in ("salir", "exit", "q"):
-            print(color("\nHasta luego! ♻️\n", "verde"))
-            break
-        print()
+        # 3. Ciclo principal
+        while True:
+            ruta = pedir_ruta_imagen()
+            
+            if not ruta:
+                # Si cierra la ventana sin elegir nada, preguntamos si quiere salir
+                print(color("¿Deseas salir del programa? (s/n)", "azul"))
+                resp = input(color("   > ", "bold")).strip().lower()
+                if resp in ("s", "si", "y", "yes"):
+                    print(color("\nHasta luego! ♻️\n", "verde"))
+                    break
+                else:
+                    continue
+
+            analizar_imagen(ruta)
+
+            print(color("¿Analizar otra imagen? (Enter para continuar / 'salir' para cerrar)", "azul"))
+            resp = input(color("   > ", "bold")).strip().lower()
+            if resp in ("salir", "exit", "q"):
+                print(color("\nHasta luego! ♻️\n", "verde"))
+                break
+            print()
+
+    except KeyboardInterrupt:
+        print(color("\nCerrando aplicación de forma segura...", "amarillo"))
+    finally:
+        # 4. Apagar el servidor al terminar
+        if servidor:
+            print(color("\nApagando el servidor Uvicorn...", "cyan"))
+            servidor.terminate()
 
 if __name__ == "__main__":
     main()
