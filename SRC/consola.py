@@ -63,11 +63,11 @@ def mostrar_resultado(data: dict):
 
     # Color según clasificación
     if "Reciclable" in clasificacion:
-        c_clasif = "verde"
+        c_clasif = "blanco"
     elif "Orgánico" in clasificacion:
-        c_clasif = "amarillo"
+        c_clasif = "verde"
     else:
-        c_clasif = "rojo"
+        c_clasif = "negro"
 
     print(color("\n╔══════════════ RESULTADO ══════════════╗", "cyan"))
     print(color(f"║  🗑️  Objeto      : ", "cyan") + color(data.get('objeto', '-'), "bold"))
