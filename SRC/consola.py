@@ -4,6 +4,7 @@ import requests
 import tkinter as tk
 from tkinter import filedialog
 
+# Asegúrate de mantener la URL correcta de tu servidor en Render
 SERVER_URL = "https://ecocycle-eqjc.onrender.com"
 
 COLORES = {
@@ -29,7 +30,7 @@ def banner():
 def verificar_servidor():
     print(color(f"Conectando al servidor en la nube: {SERVER_URL} ...", "cyan"))
     try:
-        r = requests.get(f"{SERVER_URL}/", timeout=10) # Timeout más largo por si el internet está lento
+        r = requests.get(f"{SERVER_URL}/", timeout=10)
         if r.status_code == 200:
             print(color("✅ Conexión establecida correctamente\n", "verde"))
             return True
@@ -53,7 +54,7 @@ def pedir_ruta_imagen():
     )
     
     if not ruta:
-        print(color("\n⚠️  Operación cancelada.", "amarillo"))
+        print(color("\n⚠️  Operación cancelada: No seleccionaste ninguna imagen.", "amarillo"))
         return None
     return ruta
 
@@ -81,7 +82,7 @@ def analizar_imagen(ruta: str):
             response = requests.post(
                 f"{SERVER_URL}/analizar",
                 files={"imagen": (os.path.basename(ruta), f, mime)},
-                timeout=60 # Damos buen tiempo para la subida de la foto y procesamiento
+                timeout=60
             )
         except requests.ConnectionError:
             print(color("❌ Se perdió la conexión.", "rojo"))
@@ -98,24 +99,25 @@ def main():
         sys.exit(1)
 
     while True:
-        ruta = pedir_ruta_imagen()
+        # Menú principal de la aplicación
+        print(color("¿Qué deseas hacer?", "cyan"))
+        print(color("  1. Abrir EdeA (Explorador de Archivos)", "blanco"))
+        print(color("  2. Cerrar App", "blanco"))
         
-        if not ruta:
-            print(color("¿Deseas salir del programa? (s/n)", "azul"))
-            resp = input(color("   > ", "bold")).strip().lower()
-            if resp in ("s", "si", "y", "yes"):
-                break
-            else:
-                continue
-
-        analizar_imagen(ruta)
-
-        print(color("¿Analizar otra imagen? (Enter para continuar / 'salir' para cerrar)", "azul"))
-        resp = input(color("   > ", "bold")).strip().lower()
-        if resp in ("salir", "exit", "q"):
-            print(color("\nHasta luego! ♻️\n", "verde"))
+        opcion = input(color("\n  > ", "bold")).strip()
+        
+        if opcion == "1":
+            ruta = pedir_ruta_imagen()
+            if ruta:
+                analizar_imagen(ruta)
+            # Después de analizar (o si cancelas), el ciclo while vuelve a imprimir el menú
+            
+        elif opcion in ("2", "salir", "exit", "q"):
+            print(color("\n¡Hasta luego! ♻️\n", "verde"))
             break
-        print()
+            
+        else:
+            print(color("\n⚠️  Opción no válida. Por favor ingresa 1 o 2.\n", "rojo"))
 
 if __name__ == "__main__":
     main()
