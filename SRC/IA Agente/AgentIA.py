@@ -24,7 +24,7 @@ def analizar_residuo(ruta_imagen):
     """
 
     response = client.models.generate_content(
-        model="gemini-3.1-flash-lite",
+        model="gemini-3.1-flash-lite-preview",
         contents=[instruccion, img],
         config=types.GenerateContentConfig(
             response_mime_type="application/json",
