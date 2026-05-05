@@ -28,7 +28,7 @@ jobs:
 
     - name: Build EXE with PyInstaller
       run: |
-        python -m PyInstaller --onefile --name "EcoCycle" --distpath ./dist ./SRC/consola.py
+        python -m PyInstaller --onefile --name "EcoCycle" --distpath ./dist --icon ./assets/IconRe.ico ./SRC/consola.py
       shell: pwsh
 
     - name: Check if EXE was created
