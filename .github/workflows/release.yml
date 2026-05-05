@@ -44,7 +44,7 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        files: ./dist/consola.exe
+        files: ./dist/EcoCycle.exe
         tag_name: v${{ github.run_number }}
         name: EcoCycle Build ${{ github.run_number }}
         body: |
