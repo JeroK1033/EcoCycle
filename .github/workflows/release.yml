@@ -28,12 +28,12 @@ jobs:
 
     - name: Build EXE with PyInstaller
       run: |
-        python -m PyInstaller --onefile --distpath ./dist ./SRC/consola.py
+        python -m PyInstaller --onefile --name "EcoCycle" --distpath ./dist ./SRC/consola.py
       shell: pwsh
 
     - name: Check if EXE was created
       run: |
-        if (Test-Path "./dist/consola.exe") {
+        if (Test-Path "./dist/EcoCycle.exe") {
           Write-Host "✓ EXE creado exitosamente"
         } else {
           Write-Host "✗ Error: EXE no fue creado"
