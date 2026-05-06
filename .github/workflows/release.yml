@@ -45,10 +45,10 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: ./dist/EcoCycle.exe
-        tag_name: v${{ github.run_number }}
-        name: EcoCycle Build ${{ github.run_number }}
+        tag_name: v1.0.${{ github.run_number }}
+        name: EcoCycle - Version 1.0.${{ github.run_number }}
         body: |
-          Actualización automática de la consola EcoCycle.
-          Este ejecutable se conectará directamente a tu servidor en Render.
+          Actualización automática de EcoCycle.
+          Este ejecutable se conectará directamente al servidor en la nube, listo para su uso.
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
